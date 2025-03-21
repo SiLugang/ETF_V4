@@ -9,15 +9,15 @@ import {ERC20Permit} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/
 import {ERC20Votes} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/ERC20Votes.sol";
 import {Nonces} from "@openzeppelin/contracts@5.1.0/utils/Nonces.sol";
 
-contract ETFProtocolToken is
+contract ETFProtocolToken is//ETF的token继承
     ERC20,
     ERC20Burnable,
     AccessControl,
     ERC20Permit,
     ERC20Votes
 {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    uint256 public constant INIT_TOTAL_SUPPLY = 1_000_000e18; // 1 million
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");//初始化
+    uint256 public constant INIT_TOTAL_SUPPLY = 1_000_000e18; // 1 million------初始化总供应量
 
     constructor(
         address defaultAdmin,
@@ -26,23 +26,23 @@ contract ETFProtocolToken is
         ERC20("BlockETF Protocol Token", "EPT")
         ERC20Permit("BlockETF Protocol Token")
     {
-        _mint(msg.sender, INIT_TOTAL_SUPPLY);
-        _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+        _mint(msg.sender, INIT_TOTAL_SUPPLY);//给msg.sender mint了这么多
+        _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);//区分两个ROLE？为什么怎么分的这些role
         _grantRole(MINTER_ROLE, minter);
     }
 
-    function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
+    function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {//mint函数
         _mint(to, amount);
     }
 
     // Overrides IERC6372 functions to make the token & governor timestamp-based
 
-    function clock() public view override returns (uint48) {
+    function clock() public view override returns (uint48) {//和治理有关----出块时间固定用block number；不固定用TimeStamp
         return uint48(block.timestamp);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function CLOCK_MODE() public pure override returns (string memory) {
+    function CLOCK_MODE() public pure override returns (string memory) {//和治理有关
         return "mode=timestamp";
     }
 
