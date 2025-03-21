@@ -59,19 +59,19 @@ contract ETFv4 is IETFv4, ETFv3 {
         IERC20(miningToken).safeTransfer(to, amount);
     }
 
-    function claimReward() external {
-        _updateMiningIndex();
-        _updateSupplierIndex(msg.sender);
+    function claimReward() external {//申请奖励函数
+        _updateMiningIndex();//更新miningindex
+        _updateSupplierIndex(msg.sender);//更新用户index
 
-        uint256 claimable = supplierRewardAccrued[msg.sender];
-        if (claimable == 0) revert NothingClaimable();
+        uint256 claimable = supplierRewardAccrued[msg.sender];//msg.sender的可申请奖励？
+        if (claimable == 0) revert NothingClaimable();//如果可申请等于0，返回报错
 
-        supplierRewardAccrued[msg.sender] = 0;
-        IERC20(miningToken).safeTransfer(msg.sender, claimable);
-        emit RewardClaimed(msg.sender, claimable);
+        supplierRewardAccrued[msg.sender] = 0;//首先置为0，因为所有的奖励都要转给用户，一次性提取出来
+        IERC20(miningToken).safeTransfer(msg.sender, claimable);//奖励转移给用户
+        emit RewardClaimed(msg.sender, claimable);//抛出事件，msg sender和可申请的数量
     }
 
-    function getClaimableReward(
+    function getClaimableReward(//到当前为止可领取的奖励
         address supplier
     ) external view returns (uint256) {
         uint256 claimable = supplierRewardAccrued[msg.sender];
