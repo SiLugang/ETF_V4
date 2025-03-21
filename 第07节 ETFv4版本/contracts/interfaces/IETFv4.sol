@@ -13,9 +13,9 @@ interface IETFv4 is IETFv3 {
     );
     event RewardClaimed(address indexed supplier, uint256 claimedAmount);
 
-    function updateMiningSpeedPerSecond(uint256 speed) external;
+    function updateMiningSpeedPerSecond(uint256 speed) external;//外部可见，更新挖矿速率
 
-    function claimReward() external;
+    function claimReward() external;//
 
     function miningToken() external view returns (address);
 
