@@ -66,30 +66,30 @@ contract ETFv4 is IETFv4, ETFv3 {
         uint256 claimable = supplierRewardAccrued[msg.sender];//msg.sender的可申请奖励？
         if (claimable == 0) revert NothingClaimable();//如果可申请等于0，返回报错
 
-        supplierRewardAccrued[msg.sender] = 0;//首先置为0，因为所有的奖励都要转给用户，一次性提取出来
+        supplierRewardAccrued[msg.sender] = 0;//不为0的时候，首先置为0，因为所有的奖励都要转给用户，一次性提取出来
         IERC20(miningToken).safeTransfer(msg.sender, claimable);//奖励转移给用户
         emit RewardClaimed(msg.sender, claimable);//抛出事件，msg sender和可申请的数量
     }
 
     function getClaimableReward(//到当前为止可领取的奖励
-        address supplier
-    ) external view returns (uint256) {
+        address supplier//用户地址？-----
+    ) external view returns (uint256) {//返回uint256类型的，外部veiw的数值；计算出从上一次到这一次的累计的可领取reward
         uint256 claimable = supplierRewardAccrued[msg.sender];
 
         // 计算最新的全局指数
-        uint256 globalLastIndex = miningLastIndex;
-        uint256 totalSupply = totalSupply();
-        uint256 deltaTime = block.timestamp - lastIndexUpdateTime;
-        if (totalSupply > 0 && deltaTime > 0 && miningSpeedPerSecond > 0) {
-            uint256 deltaReward = miningSpeedPerSecond * deltaTime;
-            uint256 deltaIndex = deltaReward.mulDiv(INDEX_SCALE, totalSupply);
-            globalLastIndex += deltaIndex;
+        uint256 globalLastIndex = miningLastIndex;//因为不需要更新miningLastIndex变量，所以用一个临时变量
+        uint256 totalSupply = totalSupply();//总供应量
+        uint256 deltaTime = block.timestamp - lastIndexUpdateTime;//时间差
+        if (totalSupply > 0 && deltaTime > 0 && miningSpeedPerSecond > 0) {//判断，如果三个变量大于0
+            uint256 deltaReward = miningSpeedPerSecond * deltaTime;//奖励=每秒mining速度*时间差
+            uint256 deltaIndex = deltaReward.mulDiv(INDEX_SCALE, totalSupply);//差分指数=奖励差*精度/总供应量
+            globalLastIndex += deltaIndex;//差分index加到临时变量globalLastIndex里面
         }
 
         // 计算用户可累加的奖励
-        uint256 supplierIndex = supplierLastIndex[supplier];
-        uint256 supplierSupply = balanceOf(supplier);
-        uint256 supplierDeltaIndex;
+        uint256 supplierIndex = supplierLastIndex[supplier];//用户index赋值
+        uint256 supplierSupply = balanceOf(supplier);//余额
+        uint256 supplierDeltaIndex;//用户差分index
         if (supplierIndex > 0 && supplierSupply > 0) {
             supplierDeltaIndex = globalLastIndex - supplierIndex;
             uint256 supplierDeltaReward = supplierSupply.mulDiv(
